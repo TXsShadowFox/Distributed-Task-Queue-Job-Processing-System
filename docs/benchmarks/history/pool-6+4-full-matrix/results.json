@@ -1,0 +1,441 @@
+{
+  "measured_at": "2026-10-14T04:17:01+00:00",
+  "complete": true,
+  "hardware": {
+    "cpu": "12th Gen Intel(R) Core(TM) i5-12500H",
+    "physical_cores": 12,
+    "logical_cores": 16,
+    "memory_gb": 7.7,
+    "os": "Windows 11 (10.0.26200)",
+    "python": "3.12.10",
+    "postgresql": "18.6",
+    "redis": "8.8.0"
+  },
+  "postgres_commit_rate_per_second": 20030.7,
+  "settings": {
+    "task_type": "demo.noop",
+    "worker_concurrency": 8,
+    "submission": "HTTP POST /tasks/batch, 1000 tasks per request, 4 requests in flight",
+    "database_pool_per_process": "6 + 4 overflow",
+    "timings": "production defaults (heartbeat 5 s, lease 30 s)",
+    "warm_up": "each worker set first completes 50 unmeasured tasks per worker"
+  },
+  "results": [
+    {
+      "jobs": 100,
+      "workers": 1,
+      "concurrency": 8,
+      "completed": 100,
+      "failed": 0,
+      "submit_seconds": 0.04,
+      "wall_seconds": 0.87,
+      "throughput_per_second": 114.8,
+      "e2e_ms": {
+        "p50": 509.9,
+        "p95": 853.8,
+        "p99": 866.7
+      },
+      "queue_wait_ms": {
+        "p50": 477.5,
+        "p95": 812.8,
+        "p99": 842.0
+      },
+      "exec_ms_p50": 34.0,
+      "attempts_per_task": 1.0,
+      "duplicate_successes": 0,
+      "commits_per_task": 3.0,
+      "worker_cpu_ms_per_task": 8.28,
+      "timed_out": false
+    },
+    {
+      "jobs": 1000,
+      "workers": 1,
+      "concurrency": 8,
+      "completed": 1000,
+      "failed": 0,
+      "submit_seconds": 0.2,
+      "wall_seconds": 7.56,
+      "throughput_per_second": 132.3,
+      "e2e_ms": {
+        "p50": 3925.4,
+        "p95": 7178.6,
+        "p99": 7488.1
+      },
+      "queue_wait_ms": {
+        "p50": 3887.0,
+        "p95": 7134.6,
+        "p99": 7451.1
+      },
+      "exec_ms_p50": 31.0,
+      "attempts_per_task": 1.0,
+      "duplicate_successes": 0,
+      "commits_per_task": 3.09,
+      "worker_cpu_ms_per_task": 7.14,
+      "timed_out": false
+    },
+    {
+      "jobs": 10000,
+      "workers": 1,
+      "concurrency": 8,
+      "completed": 10000,
+      "failed": 0,
+      "submit_seconds": 1.46,
+      "wall_seconds": 74.87,
+      "throughput_per_second": 133.6,
+      "e2e_ms": {
+        "p50": 37346.6,
+        "p95": 70019.0,
+        "p99": 72945.3
+      },
+      "queue_wait_ms": {
+        "p50": 37310.0,
+        "p95": 69989.0,
+        "p99": 72911.0
+      },
+      "exec_ms_p50": 32.0,
+      "attempts_per_task": 1.0,
+      "duplicate_successes": 0,
+      "commits_per_task": 3.11,
+      "worker_cpu_ms_per_task": 7.24,
+      "timed_out": false
+    },
+    {
+      "jobs": 50000,
+      "workers": 1,
+      "concurrency": 8,
+      "completed": 50000,
+      "failed": 0,
+      "submit_seconds": 6.61,
+      "wall_seconds": 365.61,
+      "throughput_per_second": 136.8,
+      "e2e_ms": {
+        "p50": 179161.0,
+        "p95": 341393.0,
+        "p99": 355603.0
+      },
+      "queue_wait_ms": {
+        "p50": 179128.0,
+        "p95": 341364.2,
+        "p99": 355568.2
+      },
+      "exec_ms_p50": 31.0,
+      "attempts_per_task": 1.0,
+      "duplicate_successes": 0,
+      "commits_per_task": 3.1,
+      "worker_cpu_ms_per_task": 7.09,
+      "timed_out": false
+    },
+    {
+      "jobs": 100,
+      "workers": 2,
+      "concurrency": 8,
+      "completed": 100,
+      "failed": 0,
+      "submit_seconds": 0.04,
+      "wall_seconds": 0.64,
+      "throughput_per_second": 156.4,
+      "e2e_ms": {
+        "p50": 301.7,
+        "p95": 498.5,
+        "p99": 528.9
+      },
+      "queue_wait_ms": {
+        "p50": 258.5,
+        "p95": 460.4,
+        "p99": 471.2
+      },
+      "exec_ms_p50": 36.5,
+      "attempts_per_task": 1.0,
+      "duplicate_successes": 0,
+      "commits_per_task": 3.34,
+      "worker_cpu_ms_per_task": 9.38,
+      "timed_out": false
+    },
+    {
+      "jobs": 1000,
+      "workers": 2,
+      "concurrency": 8,
+      "completed": 1000,
+      "failed": 0,
+      "submit_seconds": 0.22,
+      "wall_seconds": 4.52,
+      "throughput_per_second": 221.5,
+      "e2e_ms": {
+        "p50": 2320.7,
+        "p95": 4229.7,
+        "p99": 4387.5
+      },
+      "queue_wait_ms": {
+        "p50": 2270.5,
+        "p95": 4195.1,
+        "p99": 4330.2
+      },
+      "exec_ms_p50": 35.0,
+      "attempts_per_task": 1.0,
+      "duplicate_successes": 0,
+      "commits_per_task": 3.03,
+      "worker_cpu_ms_per_task": 8.0,
+      "timed_out": false
+    },
+    {
+      "jobs": 10000,
+      "workers": 2,
+      "concurrency": 8,
+      "completed": 10000,
+      "failed": 0,
+      "submit_seconds": 1.55,
+      "wall_seconds": 43.27,
+      "throughput_per_second": 231.1,
+      "e2e_ms": {
+        "p50": 20695.8,
+        "p95": 39604.4,
+        "p99": 41476.8
+      },
+      "queue_wait_ms": {
+        "p50": 20664.5,
+        "p95": 39567.1,
+        "p99": 41434.0
+      },
+      "exec_ms_p50": 36.0,
+      "attempts_per_task": 1.0,
+      "duplicate_successes": 0,
+      "commits_per_task": 3.07,
+      "worker_cpu_ms_per_task": 8.37,
+      "timed_out": false
+    },
+    {
+      "jobs": 50000,
+      "workers": 2,
+      "concurrency": 8,
+      "completed": 50000,
+      "failed": 0,
+      "submit_seconds": 8.11,
+      "wall_seconds": 214.76,
+      "throughput_per_second": 232.8,
+      "e2e_ms": {
+        "p50": 105647.1,
+        "p95": 196897.9,
+        "p99": 204991.7
+      },
+      "queue_wait_ms": {
+        "p50": 105611.5,
+        "p95": 196853.0,
+        "p99": 204940.1
+      },
+      "exec_ms_p50": 36.0,
+      "attempts_per_task": 1.0,
+      "duplicate_successes": 0,
+      "commits_per_task": 3.07,
+      "worker_cpu_ms_per_task": 8.36,
+      "timed_out": false
+    },
+    {
+      "jobs": 100,
+      "workers": 4,
+      "concurrency": 8,
+      "completed": 100,
+      "failed": 0,
+      "submit_seconds": 0.03,
+      "wall_seconds": 0.9,
+      "throughput_per_second": 110.5,
+      "e2e_ms": {
+        "p50": 276.0,
+        "p95": 389.6,
+        "p99": 800.5
+      },
+      "queue_wait_ms": {
+        "p50": 218.5,
+        "p95": 372.0,
+        "p99": 784.1
+      },
+      "exec_ms_p50": 48.0,
+      "attempts_per_task": 1.0,
+      "duplicate_successes": 0,
+      "commits_per_task": 1.13,
+      "worker_cpu_ms_per_task": 14.38,
+      "timed_out": false
+    },
+    {
+      "jobs": 1000,
+      "workers": 4,
+      "concurrency": 8,
+      "completed": 1000,
+      "failed": 0,
+      "submit_seconds": 0.17,
+      "wall_seconds": 3.7,
+      "throughput_per_second": 270.4,
+      "e2e_ms": {
+        "p50": 1964.0,
+        "p95": 3460.4,
+        "p99": 3660.6
+      },
+      "queue_wait_ms": {
+        "p50": 1906.5,
+        "p95": 3370.1,
+        "p99": 3581.0
+      },
+      "exec_ms_p50": 55.0,
+      "attempts_per_task": 1.0,
+      "duplicate_successes": 0,
+      "commits_per_task": 3.12,
+      "worker_cpu_ms_per_task": 13.72,
+      "timed_out": false
+    },
+    {
+      "jobs": 10000,
+      "workers": 4,
+      "concurrency": 8,
+      "completed": 10000,
+      "failed": 0,
+      "submit_seconds": 3.13,
+      "wall_seconds": 33.79,
+      "throughput_per_second": 296.0,
+      "e2e_ms": {
+        "p50": 16948.2,
+        "p95": 29565.0,
+        "p99": 30755.8
+      },
+      "queue_wait_ms": {
+        "p50": 16896.0,
+        "p95": 29507.0,
+        "p99": 30707.0
+      },
+      "exec_ms_p50": 55.0,
+      "attempts_per_task": 1.0,
+      "duplicate_successes": 0,
+      "commits_per_task": 3.05,
+      "worker_cpu_ms_per_task": 12.87,
+      "timed_out": false
+    },
+    {
+      "jobs": 50000,
+      "workers": 4,
+      "concurrency": 8,
+      "completed": 50000,
+      "failed": 0,
+      "submit_seconds": 12.0,
+      "wall_seconds": 159.27,
+      "throughput_per_second": 313.9,
+      "e2e_ms": {
+        "p50": 76607.7,
+        "p95": 141720.5,
+        "p99": 146290.4
+      },
+      "queue_wait_ms": {
+        "p50": 76550.0,
+        "p95": 141660.0,
+        "p99": 146236.0
+      },
+      "exec_ms_p50": 54.0,
+      "attempts_per_task": 1.0,
+      "duplicate_successes": 0,
+      "commits_per_task": 3.06,
+      "worker_cpu_ms_per_task": 12.31,
+      "timed_out": false
+    },
+    {
+      "jobs": 100,
+      "workers": 8,
+      "concurrency": 8,
+      "completed": 100,
+      "failed": 0,
+      "submit_seconds": 0.05,
+      "wall_seconds": 1.87,
+      "throughput_per_second": 53.4,
+      "e2e_ms": {
+        "p50": 281.5,
+        "p95": 1328.8,
+        "p99": 1746.7
+      },
+      "queue_wait_ms": {
+        "p50": 167.0,
+        "p95": 1310.2,
+        "p99": 1710.9
+      },
+      "exec_ms_p50": 58.5,
+      "attempts_per_task": 1.0,
+      "duplicate_successes": 0,
+      "commits_per_task": 2.27,
+      "worker_cpu_ms_per_task": 21.41,
+      "timed_out": false
+    },
+    {
+      "jobs": 1000,
+      "workers": 8,
+      "concurrency": 8,
+      "completed": 1000,
+      "failed": 0,
+      "submit_seconds": 0.25,
+      "wall_seconds": 3.63,
+      "throughput_per_second": 275.1,
+      "e2e_ms": {
+        "p50": 1576.1,
+        "p95": 2772.0,
+        "p99": 2858.3
+      },
+      "queue_wait_ms": {
+        "p50": 1492.0,
+        "p95": 2657.2,
+        "p99": 2778.0
+      },
+      "exec_ms_p50": 75.5,
+      "attempts_per_task": 1.0,
+      "duplicate_successes": 0,
+      "commits_per_task": 2.84,
+      "worker_cpu_ms_per_task": 18.64,
+      "timed_out": false
+    },
+    {
+      "jobs": 10000,
+      "workers": 8,
+      "concurrency": 8,
+      "completed": 10000,
+      "failed": 0,
+      "submit_seconds": 3.17,
+      "wall_seconds": 27.29,
+      "throughput_per_second": 366.4,
+      "e2e_ms": {
+        "p50": 12882.0,
+        "p95": 22984.3,
+        "p99": 24053.9
+      },
+      "queue_wait_ms": {
+        "p50": 12774.5,
+        "p95": 22892.0,
+        "p99": 23961.0
+      },
+      "exec_ms_p50": 91.0,
+      "attempts_per_task": 1.0,
+      "duplicate_successes": 0,
+      "commits_per_task": 3.06,
+      "worker_cpu_ms_per_task": 19.24,
+      "timed_out": false
+    },
+    {
+      "jobs": 50000,
+      "workers": 8,
+      "concurrency": 8,
+      "completed": 50000,
+      "failed": 0,
+      "submit_seconds": 17.96,
+      "wall_seconds": 140.1,
+      "throughput_per_second": 356.9,
+      "e2e_ms": {
+        "p50": 62120.0,
+        "p95": 116788.6,
+        "p99": 121678.3
+      },
+      "queue_wait_ms": {
+        "p50": 62014.0,
+        "p95": 116698.1,
+        "p99": 121582.0
+      },
+      "exec_ms_p50": 93.0,
+      "attempts_per_task": 1.0,
+      "duplicate_successes": 0,
+      "commits_per_task": 3.06,
+      "worker_cpu_ms_per_task": 19.48,
+      "timed_out": false
+    }
+  ]
+}

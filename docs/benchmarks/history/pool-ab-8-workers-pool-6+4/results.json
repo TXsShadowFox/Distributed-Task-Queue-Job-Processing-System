@@ -1,0 +1,77 @@
+{
+  "measured_at": "2026-10-14T04:19:15+00:00",
+  "complete": true,
+  "hardware": {
+    "cpu": "12th Gen Intel(R) Core(TM) i5-12500H",
+    "physical_cores": 12,
+    "logical_cores": 16,
+    "memory_gb": 7.7,
+    "os": "Windows 11 (10.0.26200)",
+    "python": "3.12.10",
+    "postgresql": "18.6",
+    "redis": "8.8.0"
+  },
+  "postgres_commit_rate_per_second": 15575.7,
+  "settings": {
+    "task_type": "demo.noop",
+    "worker_concurrency": 8,
+    "submission": "HTTP POST /tasks/batch, 1000 tasks per request, 4 requests in flight",
+    "database_pool_per_process": "6 + 4 overflow",
+    "timings": "production defaults (heartbeat 5 s, lease 30 s)",
+    "warm_up": "each worker set first completes 50 unmeasured tasks per worker"
+  },
+  "results": [
+    {
+      "jobs": 10000,
+      "workers": 8,
+      "concurrency": 8,
+      "completed": 10000,
+      "failed": 0,
+      "submit_seconds": 3.49,
+      "wall_seconds": 26.19,
+      "throughput_per_second": 381.8,
+      "e2e_ms": {
+        "p50": 11887.0,
+        "p95": 21907.6,
+        "p99": 22978.0
+      },
+      "queue_wait_ms": {
+        "p50": 11789.0,
+        "p95": 21816.0,
+        "p99": 22891.0
+      },
+      "exec_ms_p50": 89.0,
+      "attempts_per_task": 1.0,
+      "duplicate_successes": 0,
+      "commits_per_task": 3.01,
+      "worker_cpu_ms_per_task": 18.84,
+      "timed_out": false
+    },
+    {
+      "jobs": 100,
+      "workers": 8,
+      "concurrency": 8,
+      "completed": 100,
+      "failed": 0,
+      "submit_seconds": 0.04,
+      "wall_seconds": 1.83,
+      "throughput_per_second": 54.7,
+      "e2e_ms": {
+        "p50": 219.8,
+        "p95": 1330.8,
+        "p99": 1736.2
+      },
+      "queue_wait_ms": {
+        "p50": 171.5,
+        "p95": 1206.5,
+        "p99": 1614.0
+      },
+      "exec_ms_p50": 57.0,
+      "attempts_per_task": 1.0,
+      "duplicate_successes": 0,
+      "commits_per_task": 6.23,
+      "worker_cpu_ms_per_task": 16.25,
+      "timed_out": false
+    }
+  ]
+}

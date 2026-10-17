@@ -1,0 +1,59 @@
+groups:
+  - name: flowforge
+    rules:
+      - alert: FlowForgeNoActiveWorkers
+        expr: sum(flowforge_workers{status="ACTIVE"}) == 0
+        for: 2m
+        labels: { severity: critical }
+        annotations:
+          summary: No active workers; queued tasks are not being processed.
+
+      - alert: FlowForgeQueueBacklogGrowing
+        expr: sum by (queue) (flowforge_queue_stream_length) > 1000 and sum by (queue) (deriv(flowforge_queue_stream_length[10m])) > 0
+        for: 10m
+        labels: { severity: warning }
+        annotations:
+          summary: "Queue {{ $labels.queue }} has a growing backlog; add workers or check for slow handlers."
+
+      - alert: FlowForgeOutboxBacklog
+        expr: flowforge_outbox_backlog > 500
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: Outbox events are not being relayed to Redis (is the scheduler running and Redis reachable?).
+
+      - alert: FlowForgeSchedulerLoopStalled
+        expr: time() - max by (loop) (flowforge_scheduler_loop_last_success_timestamp) > 120
+        for: 2m
+        labels: { severity: critical }
+        annotations:
+          summary: "Scheduler loop {{ $labels.loop }} has not completed a cycle for over two minutes."
+
+      - alert: FlowForgeDeadLetterSpike
+        expr: sum(increase(flowforge_tasks_dead_lettered_total[15m])) > 20
+        labels: { severity: warning }
+        annotations:
+          summary: More than 20 tasks were dead-lettered in 15 minutes.
+
+      - alert: FlowForgeWorkerHandlerCrashes
+        expr: sum(increase(flowforge_worker_handler_crashes_total[10m])) > 0
+        labels: { severity: critical }
+        annotations:
+          summary: >-
+            Workers cannot handle some stream entries (unexpected errors, usually a bad release). The affected tasks
+            are safe and retried; check the worker logs for task_supervisor_crashed.
+
+      - alert: FlowForgeLeasesExpiring
+        expr: sum(increase(flowforge_leases_expired_total[15m])) > 5
+        labels: { severity: warning }
+        annotations:
+          summary: Workers are losing task leases (crashes, overload or network partitions).
+
+      - alert: FlowForgeApiErrors
+        expr: |
+          sum(rate(flowforge_http_request_duration_seconds_count{status_class="5xx"}[5m]))
+            / clamp_min(sum(rate(flowforge_http_request_duration_seconds_count[5m])), 1e-9) > 0.02
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: More than 2% of API requests are failing with 5xx.

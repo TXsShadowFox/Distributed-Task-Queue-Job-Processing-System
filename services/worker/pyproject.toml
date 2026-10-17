@@ -1,0 +1,22 @@
+[project]
+name = "flowforge-worker"
+version = "0.1.0"
+description = "FlowForge distributed worker runtime and built-in task handlers"
+requires-python = ">=3.12"
+dependencies = [
+    "flowforge-core",
+    "psutil>=7.0",
+]
+
+[project.scripts]
+flowforge-worker = "flowforge_worker.__main__:main"
+
+[tool.uv.sources]
+flowforge-core = { workspace = true }
+
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/flowforge_worker"]

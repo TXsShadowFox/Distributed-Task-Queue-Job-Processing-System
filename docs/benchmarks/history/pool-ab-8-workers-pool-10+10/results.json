@@ -1,0 +1,77 @@
+{
+  "measured_at": "2026-10-14T04:23:55+00:00",
+  "complete": true,
+  "hardware": {
+    "cpu": "12th Gen Intel(R) Core(TM) i5-12500H",
+    "physical_cores": 12,
+    "logical_cores": 16,
+    "memory_gb": 7.7,
+    "os": "Windows 11 (10.0.26200)",
+    "python": "3.12.10",
+    "postgresql": "18.6",
+    "redis": "8.8.0"
+  },
+  "postgres_commit_rate_per_second": 21367.7,
+  "settings": {
+    "task_type": "demo.noop",
+    "worker_concurrency": 8,
+    "submission": "HTTP POST /tasks/batch, 1000 tasks per request, 4 requests in flight",
+    "database_pool_per_process": "10 + 10 overflow (production defaults)",
+    "timings": "production defaults (heartbeat 5 s, lease 30 s)",
+    "warm_up": "each worker set first completes 50 unmeasured tasks per worker"
+  },
+  "results": [
+    {
+      "jobs": 10000,
+      "workers": 8,
+      "concurrency": 8,
+      "completed": 10000,
+      "failed": 0,
+      "submit_seconds": 3.42,
+      "wall_seconds": 22.62,
+      "throughput_per_second": 442.1,
+      "e2e_ms": {
+        "p50": 10433.3,
+        "p95": 18724.0,
+        "p99": 19596.8
+      },
+      "queue_wait_ms": {
+        "p50": 10358.0,
+        "p95": 18644.2,
+        "p99": 19513.0
+      },
+      "exec_ms_p50": 81.0,
+      "attempts_per_task": 1.0,
+      "duplicate_successes": 0,
+      "commits_per_task": 2.97,
+      "worker_cpu_ms_per_task": 16.92,
+      "timed_out": false
+    },
+    {
+      "jobs": 100,
+      "workers": 8,
+      "concurrency": 8,
+      "completed": 100,
+      "failed": 0,
+      "submit_seconds": 0.05,
+      "wall_seconds": 0.31,
+      "throughput_per_second": 320.6,
+      "e2e_ms": {
+        "p50": 194.4,
+        "p95": 292.2,
+        "p99": 311.4
+      },
+      "queue_wait_ms": {
+        "p50": 93.5,
+        "p95": 239.1,
+        "p99": 247.0
+      },
+      "exec_ms_p50": 84.0,
+      "attempts_per_task": 1.0,
+      "duplicate_successes": 0,
+      "commits_per_task": 6.12,
+      "worker_cpu_ms_per_task": 18.12,
+      "timed_out": false
+    }
+  ]
+}

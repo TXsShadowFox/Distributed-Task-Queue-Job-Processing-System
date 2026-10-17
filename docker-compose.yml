@@ -1,0 +1,187 @@
+# FlowForge: the whole platform on one machine.
+#
+#   cp .env.example .env            # then replace every __GENERATE__ (or: python scripts/devstack.py init-env)
+#   docker compose up -d --build    # dashboard + API on http://localhost:8080
+#   docker compose --profile observability up -d   # also Prometheus :9090, Grafana :3001, Jaeger :16686
+#   docker compose up -d --scale worker=4          # more workers: they coordinate through PostgreSQL + Redis
+#
+# Only nginx (and the optional observability UIs) publish ports. PostgreSQL, Redis and the services' metrics stay on
+# the internal network. Secrets come from .env and are never baked into images.
+
+name: flowforge
+
+x-backend: &backend
+  image: flowforge-backend:local
+  build:
+    context: .
+    dockerfile: infrastructure/docker/backend.Dockerfile
+  restart: unless-stopped
+  env_file: .env
+  environment: &backend-env
+    FLOWFORGE_ENVIRONMENT: ${FLOWFORGE_ENVIRONMENT:-production}
+    FLOWFORGE_DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-flowforge}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-flowforge}
+    FLOWFORGE_REDIS_URL: redis://redis:6379/0
+    FLOWFORGE_OTEL_EXPORTER_OTLP_ENDPOINT: ${FLOWFORGE_OTEL_EXPORTER_OTLP_ENDPOINT:-}
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+    migrate:
+      condition: service_completed_successfully
+  networks: [backend]
+
+services:
+  # ---------------------------------------------------------------------------------------------- data stores
+  postgres:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-flowforge}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-flowforge}
+    command: ["postgres", "-c", "max_connections=300", "-c", "shared_buffers=256MB"]
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [backend]
+
+  redis:
+    image: redis:8-alpine
+    restart: unless-stopped
+    # Streams are a dispatch channel, not the source of truth: PostgreSQL is. AOF makes restarts cheaper, and the
+    # reconciler re-dispatches anything Redis loses anyway.
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [backend]
+
+  # ---------------------------------------------------------------------------------------------- FlowForge
+  migrate:
+    <<: *backend
+    restart: "no"
+    command: ["flowforge-admin", "migrate"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      disable: true
+
+  api:
+    <<: *backend
+    command: ["flowforge-api"]
+    environment:
+      <<: *backend-env
+      FLOWFORGE_API_HOST: 0.0.0.0
+      FLOWFORGE_API_PORT: "8000"
+      # nginx is the single trusted hop in front of the API (real client IPs for rate limiting and audit logs).
+      FLOWFORGE_TRUSTED_PROXY_COUNT: "1"
+
+  worker:
+    <<: *backend
+    command: ["flowforge-worker"]
+    # Give running tasks time to finish (or be handed back) on `docker compose stop`.
+    stop_grace_period: 45s
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:9101/metrics', timeout=2)"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+
+  scheduler:
+    <<: *backend
+    command: ["flowforge-scheduler"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:9102/metrics', timeout=2)"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+
+  web:
+    image: flowforge-web:local
+    build:
+      context: .
+      dockerfile: infrastructure/docker/web.Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ""
+    restart: unless-stopped
+    networks: [backend]
+
+  nginx:
+    image: nginx:1.29-alpine
+    restart: unless-stopped
+    ports:
+      - "${FLOWFORGE_HTTP_PORT:-8080}:8080"
+    volumes:
+      - ./infrastructure/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      api:
+        condition: service_healthy
+      web:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/health/live"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+    networks: [backend]
+
+  # ---------------------------------------------------------------------------------------------- observability
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    profiles: [observability]
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=15d
+    volumes:
+      - ./infrastructure/prometheus:/etc/prometheus:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "127.0.0.1:9090:9090"
+    networks: [backend]
+
+  grafana:
+    image: grafana/grafana:12.1.1
+    profiles: [observability]
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?set GRAFANA_ADMIN_PASSWORD in .env}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+    volumes:
+      - ./infrastructure/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./infrastructure/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "127.0.0.1:3001:3000"
+    depends_on: [prometheus]
+    networks: [backend]
+
+  jaeger:
+    image: jaegertracing/jaeger:2.9.0
+    profiles: [observability]
+    restart: unless-stopped
+    # Receives OTLP/HTTP on :4318. Point the services at it with
+    # FLOWFORGE_OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318 in .env.
+    ports:
+      - "127.0.0.1:16686:16686"
+    networks: [backend]
+
+networks:
+  backend: {}
+
+volumes:
+  postgres-data: {}
+  redis-data: {}
+  prometheus-data: {}
+  grafana-data: {}

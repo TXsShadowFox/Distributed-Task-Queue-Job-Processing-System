@@ -1,0 +1,25 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - /etc/prometheus/alerts.yml
+
+scrape_configs:
+  # Every replica is discovered through Docker's DNS, so `--scale worker=N` needs no config change.
+  - job_name: flowforge-api
+    metrics_path: /metrics
+    dns_sd_configs:
+      - names: [api]
+        type: A
+        port: 8000
+  - job_name: flowforge-worker
+    dns_sd_configs:
+      - names: [worker]
+        type: A
+        port: 9101
+  - job_name: flowforge-scheduler
+    dns_sd_configs:
+      - names: [scheduler]
+        type: A
+        port: 9102

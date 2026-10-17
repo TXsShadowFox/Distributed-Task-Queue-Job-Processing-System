@@ -1,0 +1,103 @@
+{
+  "measured_at": "2026-10-14T04:25:04+00:00",
+  "complete": true,
+  "hardware": {
+    "cpu": "12th Gen Intel(R) Core(TM) i5-12500H",
+    "physical_cores": 12,
+    "logical_cores": 16,
+    "memory_gb": 7.7,
+    "os": "Windows 11 (10.0.26200)",
+    "python": "3.12.10",
+    "postgresql": "18.6",
+    "redis": "8.8.0"
+  },
+  "postgres_commit_rate_per_second": 23354.0,
+  "settings": {
+    "task_type": "demo.noop",
+    "worker_concurrency": 8,
+    "submission": "HTTP POST /tasks/batch, 1000 tasks per request, 4 requests in flight",
+    "database_pool_per_process": "10 + 10 overflow (production defaults)",
+    "timings": "production defaults (heartbeat 5 s, lease 30 s)",
+    "warm_up": "none (cold workers)"
+  },
+  "results": [
+    {
+      "jobs": 100,
+      "workers": 8,
+      "concurrency": 8,
+      "completed": 100,
+      "failed": 0,
+      "submit_seconds": 0.06,
+      "wall_seconds": 6.05,
+      "throughput_per_second": 16.5,
+      "e2e_ms": {
+        "p50": 777.8,
+        "p95": 5530.2,
+        "p99": 5956.4
+      },
+      "queue_wait_ms": {
+        "p50": 759.0,
+        "p95": 5516.4,
+        "p99": 5939.9
+      },
+      "exec_ms_p50": 15.0,
+      "attempts_per_task": 1.0,
+      "duplicate_successes": 0,
+      "commits_per_task": 3.62,
+      "worker_cpu_ms_per_task": 19.84,
+      "timed_out": false
+    },
+    {
+      "jobs": 100,
+      "workers": 8,
+      "concurrency": 8,
+      "completed": 100,
+      "failed": 0,
+      "submit_seconds": 0.04,
+      "wall_seconds": 0.33,
+      "throughput_per_second": 306.9,
+      "e2e_ms": {
+        "p50": 245.4,
+        "p95": 317.9,
+        "p99": 321.7
+      },
+      "queue_wait_ms": {
+        "p50": 91.5,
+        "p95": 270.1,
+        "p99": 276.0
+      },
+      "exec_ms_p50": 96.0,
+      "attempts_per_task": 1.0,
+      "duplicate_successes": 0,
+      "commits_per_task": 0.83,
+      "worker_cpu_ms_per_task": 18.91,
+      "timed_out": false
+    },
+    {
+      "jobs": 100,
+      "workers": 8,
+      "concurrency": 8,
+      "completed": 100,
+      "failed": 0,
+      "submit_seconds": 0.03,
+      "wall_seconds": 0.32,
+      "throughput_per_second": 314.8,
+      "e2e_ms": {
+        "p50": 181.3,
+        "p95": 305.2,
+        "p99": 313.9
+      },
+      "queue_wait_ms": {
+        "p50": 58.0,
+        "p95": 242.1,
+        "p99": 246.0
+      },
+      "exec_ms_p50": 94.0,
+      "attempts_per_task": 1.0,
+      "duplicate_successes": 0,
+      "commits_per_task": 2.1,
+      "worker_cpu_ms_per_task": 20.31,
+      "timed_out": false
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "measured_at": "2026-10-14T04:48:52+00:00",
+  "complete": true,
+  "hardware": {
+    "cpu": "12th Gen Intel(R) Core(TM) i5-12500H",
+    "physical_cores": 12,
+    "logical_cores": 16,
+    "memory_gb": 7.7,
+    "os": "Windows 11 (10.0.26200)",
+    "python": "3.12.10",
+    "postgresql": "18.6",
+    "redis": "8.8.0"
+  },
+  "postgres_commit_rate_per_second": 19183.3,
+  "workload": "io",
+  "settings": {
+    "task_type": "demo.sleep",
+    "payload": "{\"seconds\": 0.1, \"report_progress\": false}",
+    "worker_concurrency": 8,
+    "worker_cpu_processes": 2,
+    "submission": "HTTP POST /tasks/batch, 1000 tasks per request, 4 requests in flight",
+    "database_pool_per_process": "10 + 10 overflow (production defaults)",
+    "timings": "production defaults (heartbeat 5 s, lease 30 s)",
+    "warm_up": "each worker set first completes 5 unmeasured tasks per worker"
+  },
+  "results": [
+    {
+      "jobs": 600,
+      "workers": 2,
+      "concurrency": 8,
+      "completed": 600,
+      "failed": 0,
+      "submit_seconds": 0.17,
+      "wall_seconds": 72.26,
+      "throughput_per_second": 8.3,
+      "e2e_ms": {
+        "p50": 4209.4,
+        "p95": 10092.4,
+        "p99": 72256.5
+      },
+      "queue_wait_ms": {
+        "p50": 4080.5,
+        "p95": 9957.0,
+        "p99": 72131.0
+      },
+      "exec_ms_p50": 135.0,
+      "attempts_per_task": 1.0,
+      "duplicate_successes": 0,
+      "commits_per_task": 4.17,
+      "worker_cpu_ms_per_task": null,
+      "worker_rss_mb_peak": 95.6,
+      "api_rss_mb_peak": 120.6,
+      "timed_out": false,
+      "killed_after_completed": 180,
+      "lost_attempts": 0,
+      "retried_tasks": 0,
+      "recovery_seconds": null,
+      "last_finish_after_kill_seconds": 70.2
+    }
+  ]
+}

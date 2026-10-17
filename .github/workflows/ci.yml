@@ -1,0 +1,185 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  UV_VERSION: "0.13.0"
+  PYTHON_VERSION: "3.12"
+  NODE_VERSION: "24"
+
+jobs:
+  python-quality:
+    name: Python lint, format, types
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+        with:
+          version: ${{ env.UV_VERSION }}
+          python-version: ${{ env.PYTHON_VERSION }}
+          enable-cache: true
+      - run: uv sync --frozen
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: >-
+          uv run mypy packages/shared-schemas/src packages/core/src packages/python-sdk/src apps/api/src
+          services/worker/src services/scheduler/src tests
+      - name: OpenAPI document is up to date
+        run: uv run python scripts/export_openapi.py --check
+
+  python-tests:
+    name: Python unit + integration (coverage >= 85%)
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: flowforge
+          POSTGRES_PASSWORD: flowforge-ci
+          POSTGRES_DB: flowforge_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U flowforge -d flowforge_test" --health-interval 5s --health-timeout 3s
+          --health-retries 20
+      redis:
+        image: redis:8-alpine
+        ports: ["6379:6379"]
+        options: --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      FLOWFORGE_TEST_DATABASE_URL: postgresql+asyncpg://flowforge:flowforge-ci@127.0.0.1:5432/flowforge_test
+      FLOWFORGE_TEST_REDIS_URL: redis://127.0.0.1:6379/1
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+        with:
+          version: ${{ env.UV_VERSION }}
+          python-version: ${{ env.PYTHON_VERSION }}
+          enable-cache: true
+      - run: uv sync --frozen
+      - run: uv run pytest tests/unit tests/integration --cov --cov-report=xml --cov-report=term
+      - name: Chaos tests (real process kills and network partitions)
+        env:
+          FLOWFORGE_RUN_CHAOS: "1"
+        run: uv run pytest tests/chaos -v
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-xml
+          path: coverage.xml
+
+  web:
+    name: Dashboard lint, types, unit tests, build
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+
+  security:
+    name: Dependency and static security scans
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v7
+        with:
+          version: ${{ env.UV_VERSION }}
+          python-version: ${{ env.PYTHON_VERSION }}
+          enable-cache: true
+      - run: uv sync --frozen
+      - name: pip-audit (locked runtime dependencies)
+        # Fully pinned and hashed, so pip-audit can check them without resolving anything itself.
+        run: |
+          uv export --frozen --no-dev --no-emit-workspace > /tmp/requirements.txt
+          uv run pip-audit --strict --disable-pip -r /tmp/requirements.txt
+      - name: bandit
+        run: >-
+          uv run bandit -q -r packages/shared-schemas/src packages/core/src packages/python-sdk/src apps/api/src
+          services/worker/src services/scheduler/src -c pyproject.toml
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: npm audit (production dependencies)
+        working-directory: apps/web
+        run: npm audit --omit=dev --audit-level=high
+
+  docker:
+    name: Images build, compose config is valid
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - name: Throwaway .env for CI
+        run: |
+          cp .env.example .env
+          sed -i "s/__GENERATE__/$(openssl rand -hex 24)/g" .env
+      - run: docker compose config --quiet
+      - run: docker compose --profile observability config --quiet
+      - run: docker compose build
+
+  e2e:
+    name: End-to-end (Playwright against docker compose)
+    runs-on: ubuntu-24.04
+    needs: [docker]
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - name: Configure the stack for tests
+        run: |
+          cp .env.example .env
+          sed -i "s/__GENERATE__/$(openssl rand -hex 24)/g" .env
+          # Every full page load refreshes the session; the suite loads many pages from one IP.
+          echo "FLOWFORGE_AUTH_RATE_LIMIT_PER_MINUTE=1000" >> .env
+      - run: docker compose up -d --build
+      - name: Wait for the stack
+        run: |
+          for i in $(seq 1 90); do
+            curl -fsS http://localhost:8080/health/ready && curl -fsS -o /dev/null http://localhost:8080/login && exit 0
+            sleep 2
+          done
+          docker compose ps
+          exit 1
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Install Playwright
+        working-directory: tests/e2e
+        run: |
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Run Playwright
+        working-directory: tests/e2e
+        env:
+          FLOWFORGE_WEB_URL: http://localhost:8080
+          FLOWFORGE_API_URL: http://localhost:8080
+        run: npx playwright test --project=desktop --project=mobile
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: tests/e2e/playwright-report
+      - name: Service logs on failure
+        if: failure()
+        run: docker compose logs --no-color --tail=300

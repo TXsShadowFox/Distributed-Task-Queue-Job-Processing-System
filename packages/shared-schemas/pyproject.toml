@@ -1,0 +1,17 @@
+[project]
+name = "flowforge-shared"
+version = "0.1.0"
+description = "FlowForge shared domain contracts: task state machine, retry policy, DAG validation, cron, priorities"
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic>=2.11",
+    "cronsim>=2.6",
+    "tzdata>=2025.2",
+]
+
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/flowforge_shared"]

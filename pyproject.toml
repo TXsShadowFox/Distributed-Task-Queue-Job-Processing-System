@@ -1,0 +1,155 @@
+[project]
+name = "flowforge-workspace"
+version = "0.1.0"
+description = "FlowForge monorepo workspace root (development environment, not a distributable package)"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "flowforge-shared",
+    "flowforge-core",
+    "flowforge-api",
+    "flowforge-worker",
+    "flowforge-scheduler",
+    "flowforge-sdk",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1",
+    "pytest-asyncio>=1.4",
+    "pytest-cov>=7.1",
+    "pytest-timeout>=2.4",
+    "httpx>=0.28",
+    "ruff>=0.17",
+    "mypy>=2.4",
+    "types-jsonschema>=4.25",
+    "types-psutil>=7.0",
+    "bandit>=1.9",
+    "pip-audit>=2.10",
+    "locust>=2.46",
+    "testcontainers[postgres,redis]>=4.10",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = [
+    "packages/shared-schemas",
+    "packages/core",
+    "packages/python-sdk",
+    "apps/api",
+    "services/worker",
+    "services/scheduler",
+]
+
+[tool.uv.sources]
+flowforge-shared = { workspace = true }
+flowforge-core = { workspace = true }
+flowforge-api = { workspace = true }
+flowforge-worker = { workspace = true }
+flowforge-scheduler = { workspace = true }
+flowforge-sdk = { workspace = true }
+
+# ----------------------------------------------------------------------------- ruff
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+extend-exclude = [".devtools", "apps/web", "tests/e2e"]
+
+[tool.ruff.lint]
+select = [
+    "E", "F", "W", "I", "B", "UP", "ASYNC", "RUF", "SIM", "C4", "DTZ", "S", "PT", "T20", "LOG", "G",
+    "PIE", "RET", "TID", "PERF", "BLE",
+]
+ignore = [
+    "E501",    # line length handled by the formatter
+    "S311",    # random is used for jitter/simulation, not cryptography
+    "RET504",  # explicit assignment before return can aid readability
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "S105", "S106", "S107", "S108", "PT011", "PT018", "ASYNC109", "BLE001", "S603", "S607"]
+"scripts/**" = ["T20", "S603", "S607"]
+# The SDK mirrors its sync API in the async client, including wait(timeout=...).
+"packages/python-sdk/src/flowforge_sdk/client.py" = ["ASYNC109"]
+"**/migrations/versions/*.py" = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = [
+    "flowforge_shared", "flowforge_core", "flowforge_api",
+    "flowforge_worker", "flowforge_scheduler", "flowforge_sdk",
+]
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "parents"
+
+# ----------------------------------------------------------------------------- mypy
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unreachable = true
+pretty = true
+show_error_codes = true
+plugins = ["pydantic.mypy"]
+explicit_package_bases = true
+mypy_path = [
+    "packages/shared-schemas/src",
+    "packages/core/src",
+    "packages/python-sdk/src",
+    "apps/api/src",
+    "services/worker/src",
+    "services/scheduler/src",
+]
+exclude = ["migrations/versions/"]
+
+[[tool.mypy.overrides]]
+module = ["cronsim.*", "prometheus_client.*", "locust.*", "asyncpg.*", "testcontainers.*"]
+ignore_missing_imports = true
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+
+# ----------------------------------------------------------------------------- pytest
+[tool.pytest.ini_options]
+minversion = "9.0"
+testpaths = ["tests/unit", "tests/integration", "tests/chaos"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
+addopts = "-ra --strict-markers --strict-config"
+timeout = 120
+markers = [
+    "integration: requires PostgreSQL and Redis",
+    "chaos: fault-injection tests that start/kill real processes",
+    "slow: long-running tests",
+]
+filterwarnings = [
+    "error::pytest.PytestUnraisableExceptionWarning",
+]
+
+# ----------------------------------------------------------------------------- bandit
+[tool.bandit]
+exclude_dirs = ["tests", "*/migrations/versions/*"]
+
+# ----------------------------------------------------------------------------- coverage
+[tool.coverage.run]
+branch = true
+source = [
+    "flowforge_shared", "flowforge_core", "flowforge_api",
+    "flowforge_worker", "flowforge_scheduler", "flowforge_sdk",
+]
+omit = ["*/migrations/versions/*"]
+concurrency = ["thread", "greenlet"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+fail_under = 85
+exclude_also = [
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "@overload",
+    "if __name__ == .__main__.:",
+]
